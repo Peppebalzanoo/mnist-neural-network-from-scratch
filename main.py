@@ -1,156 +1,206 @@
 import numpy as np
-from network import Network
 from loader import DataLoader
+from network import Network
 from error import cross_entropy
-import matplotlib.pyplot as plt
+from config import ExperimentConfig
+from experiments import ExperimentRunner
+from results_manager import ResultsManager
+from visualization import Visualizer
+import activation as act
 
 
-def kfold_cross_validation(loader: DataLoader, input_neurons, hidden_neurons, output_neurons, k, epoch_number, eta, patience) -> "Network":
-    """Run k-fold cross-validation on the dataset."""
-
-    validation_accuracies = []
-    best_model = None
-
-    # Create stratified folds
-    fold_indices = loader.create_stratified_k_folds(loader._train_labels, k)
-
-    # Iterate over each fold
-    for i in range(0, k):
-        print(f"\n--- Start Fold {i+1}/{k} ---")
-        # Prepare the data for this specific fold
-        val_indices = fold_indices[i]
-
-        # The training set is composed of all other folds combined
-        train_indices_list = [fold_indices[j] for j in range(k) if j != i]
-        train_indices = np.concatenate(train_indices_list)
-
-        # Select the data and labels using the indices
-        if loader._train_data is None or loader._train_labels is None:
-            raise ValueError("Training data or labels not loaded. Please call _load_data() first.")
-        X_train, Y_train = loader._train_data[train_indices], loader._train_labels[train_indices]
-        X_valid, Y_valid = loader._train_data[val_indices], loader._train_labels[val_indices]
-
-        print(f"Training Set Size: {X_train.shape[0]}")
-        print(f"Validation Set Size: {X_valid.shape[0]}")
-
-        # Create a new network instance for each fold
-        # to ensure that training starts from scratch
-        mynet = Network(input_neurons, hidden_neurons, output_neurons)
-
-        # Train the network
-        mynet.fit(X_train, Y_train, X_valid, Y_valid, cross_entropy, epoch_number, eta, patience)
-
-        # Initialize the best model with the first trained model
-        best_model = mynet.copy_network() if i == 0 else best_model
-
-        # Save the validation accuracy of this fold
-        Z_valid = mynet.forward_propagation(X_valid)
-        curr_acc = mynet.get_accuracy(Z_valid, Y_valid)
-        validation_accuracies.append(curr_acc)
-
-        if curr_acc > validation_accuracies[-1] and len(validation_accuracies) > 0 and i > 0:
-            best_model = mynet.copy_network()  # Save the best model if current accuracy is higher
-
-        print(f"Validation Accuracy of Fold {i+1}: {curr_acc:.15f}")
-
-    # Calculate the final results
-    mean_accuracy = np.mean(validation_accuracies)
-    std_accuracy = np.std(validation_accuracies)
-    print(f"\nK-Fold Cross-Validation Results: Mean Accuracy = {mean_accuracy:.15f}, Std Dev = {std_accuracy:.15f}")
-
-    if best_model is None:
-        raise RuntimeError("No valid model was trained during k-fold cross-validation.")
-
-    return best_model
-
-
-def holdout_validation(loader: DataLoader, mynet: Network, epoch_number, eta, patience, train_ratio=0.8):
-    """Train the network with training and validation sets."""
-
-    # Split the data into training and validation sets
-    X_train, Y_train, X_valid, Y_valid = loader.split_data(train_ratio)
-
-    # Print the architecture of the network
-    mynet.get_info()
-
+def simple_network_example():
+    """
+    EXAMPLE: Train and evaluate a single network without running full experiments.
+    
+    This function demonstrates how to:
+    1. Load the MNIST dataset
+    2. Create a custom network architecture
+    3. Train the network with specific hyperparameters
+    4. Evaluate performance on test set
+    5. Visualize predictions (optional)
+    
+    Uncomment the function call at the bottom of this file to run this example.
+    """
+    print("=" * 80)
+    print("SIMPLE NETWORK TRAINING EXAMPLE")
+    print("=" * 80)
+    
+    # Load dataset
+    print("\nLoading MNIST dataset...")
+    loader = DataLoader("./MNIST")
+    X_train, Y_train, X_test, Y_test = loader.get_train_test_data()
+    print(f"Dataset loaded: {X_train.shape[0]} training samples, {X_test.shape[0]} test samples")
+    
+    # Define network architecture
+    input_neurons = X_train.shape[1]   # 784 (28x28 pixels)
+    hidden_neurons = [128, 64]         # Two hidden layers: 128 -> 64
+    output_neurons = Y_train.shape[1]  # 10 (digits 0-9)
+    
+    print(f"\nNetwork Architecture: {input_neurons} -> {hidden_neurons} -> {output_neurons}")
+    
+    # Create network with ReLU activation
+    network = Network(
+        input_neurons=input_neurons,
+        hiddens_neurons=hidden_neurons,
+        output_neurons=output_neurons,
+        activation_function=act.relu  # Try: act.sigmoid, act.tanh, act.relu
+    )
+    
+    # Split data into train and validation sets
+    train_ratio = 0.8
+    X_train_split, Y_train_split, X_valid, Y_valid = loader.split_data(train_ratio)
+    print(f"Split: {X_train_split.shape[0]} training, {X_valid.shape[0]} validation")
+    
+    # Print network information
+    network.get_info()
+    
     # Train the network
-    mynet.fit(X_train, Y_train, X_valid, Y_valid, cross_entropy, epoch_number, eta, patience)
-
-    # Evaluate the final model on the validation set
-    Z_valid = mynet.forward_propagation(X_valid)
-
-    print(f"Validation Set accuracy: {mynet.get_accuracy(Z_valid, Y_valid):.15f}")
-
-
-def perform_inference(mynet: Network, X_test, Y_test):
-    """Perform inference on a single test image and visualize the result."""
-    random_index = np.random.randint(0, X_test.shape[0])
-    img_test = X_test[random_index]  # Get a single test image
-
-    # Get the gold label for the test image
-    true_label = np.argmax(Y_test[random_index])  # Labels are one-hot encoded
-
-    # Infer the label of the test image
-    Y_pred = mynet.forward_propagation(img_test)
-    predicted_label = np.argmax(Y_pred)  # Convert one-hot to label
-
-    print(f"\nTrue label: {true_label}")
-    print(f"Predicted label: {predicted_label}")
-
-    # Visualize the test image and its prediction
-    img_test = img_test.reshape(28, 28)  # Assuming MNIST images are 28x28
-    plt.imshow(img_test, cmap="gray")
-    plt.title(f"True label: {true_label} | Predicted: {predicted_label}")
-    plt.axis("off")  # Hide the axes
-    plt.show()
+    print("\nTraining network...")
+    print("Hyperparameters: eta=0.01, max_epochs=100, patience=5")
+    
+    network.fit(
+        X_train=X_train_split,
+        Y_train=Y_train_split,
+        X_valid=X_valid,
+        Y_valid=Y_valid,
+        error_function=cross_entropy,
+        epoch_number=100,       # Maximum epochs
+        eta=0.01,               # Learning rate
+        patience=5              # Early stopping patience
+    )
+    
+    # Evaluate on test set
+    print("\n" + "-" * 80)
+    print("EVALUATION RESULTS")
+    print("-" * 80)
+    
+    Z_test = network.forward_propagation(X_test)
+    test_accuracy = network.get_accuracy(Z_test, Y_test)
+    test_loss = cross_entropy(Z_test, Y_test)
+    
+    print(f"Test Accuracy: {test_accuracy:.4f} ({test_accuracy*100:.2f}%)")
+    print(f"Test Loss: {test_loss:.6f}")
+    
+    # Optional: Visualize some predictions
+    # Uncomment the lines below to see visual predictions
+    # print("\nVisualizing predictions...")
+    # Visualizer.show_multiple_predictions(network, X_test, Y_test, num_samples=5)
+    
+    print("\n" + "=" * 80)
+    print("Example completed! Modify this function to experiment with:")
+    print("  - Different architectures: hidden_neurons = [50], [100, 50], [128, 64, 32]")
+    print("  - Different learning rates: eta = 0.001, 0.01, 0.1")
+    print("  - Different activations: act.sigmoid, act.tanh, act.relu")
+    print("=" * 80 + "\n")
+    
+    return network
 
 
 def main():
-    # Data loading and preprocessing
+    # ========================================================================
+    # DATASET LOADING
+    # ========================================================================
+    # Load MNIST dataset from the specified directory.
+    # Change "./MNIST" path if your dataset is located elsewhere.
+    print("Loading MNIST dataset...")
     loader = DataLoader("./MNIST")
-
-    # Get the training and test data using the DataLoader
     X_train, Y_train, X_test, Y_test = loader.get_train_test_data()
+    print(f"Dataset loaded: {X_train.shape[0]} training samples, {X_test.shape[0]} test samples\n")
 
-    ### Set the number of input, hidden (can be adjusted) and output neurons ###
-    output_neurons = Y_train.shape[1]
+    # ========================================================================
+    # EXPERIMENT CONFIGURATION
+    # ========================================================================
+    # Network size is determined by the dataset:
+    # - Input neurons = number of features (784 for MNIST 28x28 images)
+    # - Output neurons = number of classes (10 for digits 0-9)
     input_neurons = X_train.shape[1]
-    hidden_neurons = [50]
-    ##############################################################################
+    output_neurons = Y_train.shape[1]
+    
+    # Load experiment parameters from config.py
+    # MODIFY config.py TO CHANGE: architectures, learning rates, epochs, etc.
+    config = ExperimentConfig()
 
-    ### Set parameters for training ###
-    eta = 0.1  # Learning rate
-    epoch_number = 1000  # Number of epochs for training
-    patience = 5  # Early stopping patience
-    ##############################################################################
+    # ========================================================================
+    # EXPERIMENT EXECUTION
+    # ========================================================================
+    # Create experiment runner with the loaded dataset
+    runner = ExperimentRunner(loader, X_test, Y_test)
 
-    # Create a network instance
-    mynet = Network(input_neurons, hidden_neurons, output_neurons)
+    # Step 1: Run holdout validation experiments
+    # Tests ALL combinations of: architectures × learning_rates × activation_functions
+    # This initial screening identifies the most promising configurations.
+    # Results are saved incrementally after each experiment (safe for interruptions).
+    holdout_results = runner.run_holdout_experiments(
+        input_neurons=input_neurons,
+        output_neurons=output_neurons,
+        hidden_configurations=config.HIDDEN_CONFIGURATIONS,
+        learning_rates=config.LEARNING_RATES,
+        activation_functions=config.ACTIVATION_FUNCTIONS,
+        error_function=cross_entropy,
+        epoch_number=config.EPOCH_NUMBER,
+        patience=config.PATIENCE,
+    )
 
-    ##############################################################################
-    # Train the network using holdout validation
-    holdout_validation(loader, mynet, epoch_number, eta, patience, train_ratio=0.8)
-    ##############################################################################
+    # Step 2: Run k-fold cross-validation on top configurations
+    # Re-evaluates the best N configurations from holdout using k-fold CV
+    # for more robust performance estimates. Adjust TOP_N_FOR_KFOLD in config.py.
+    # Results are saved incrementally after each k-fold experiment.
+    kfold_results = runner.run_kfold_on_best(
+        input_neurons=input_neurons,
+        output_neurons=output_neurons,
+        holdout_results=holdout_results,
+        activation_functions=config.ACTIVATION_FUNCTIONS,
+        error_function=cross_entropy,
+        epoch_number=config.EPOCH_NUMBER,
+        patience=config.PATIENCE,
+        k=config.K_FOLDS,
+        top_n=config.TOP_N_FOR_KFOLD,
+    )
 
-    # Example usage of the network's forward propagation method with random test image
-    # perform_inference(mynet, X_test, Y_test)
-    ##############################################################################
+    # ========================================================================
+    # RESULTS PROCESSING AND SAVING
+    # ========================================================================
+    # Combine holdout and k-fold results for comprehensive analysis
+    all_results = holdout_results + kfold_results
 
-    # Test the network on the test set
-    Z = mynet.forward_propagation(X_test)  # Forward propagation on the test set
-    accuracy = mynet.get_accuracy(Z, Y_test)  # Calculate accuracy on the test set
-    print(f"\nTest set accuracy: {accuracy:.15f}")
-    ##############################################################################
+    # Save results in multiple formats (JSON, CSV, Markdown)
+    # Output file names can be changed in config.py
+    print("\n" + "=" * 80)
+    print("SAVING RESULTS")
+    print("=" * 80)
 
-    # Train the network using k-fold cross-validation
-    k = output_neurons  # Number of folds
-    best_model: Network = kfold_cross_validation(loader, input_neurons, hidden_neurons, output_neurons, k, epoch_number, eta, patience)
+    ResultsManager.save_json(all_results, config.JSON_OUTPUT)
+    ResultsManager.save_csv(all_results, config.CSV_OUTPUT)
+    ResultsManager.generate_markdown_report(all_results, config.MARKDOWN_OUTPUT)
 
-    Z = best_model.forward_propagation(X_test)  # Forward propagation on the test set with the best model
-    best_accuracy = best_model.get_accuracy(Z, Y_test)
-    print(f"[K-Fold] Best model Test Set accuracy: {best_accuracy:.15f}")
-    ##############################################################################
+    # Print summary statistics to console
+    ResultsManager.print_summary(all_results)
+
+    # ========================================================================
+    # OPTIONAL: VISUALIZATION OF BEST MODEL
+    # ========================================================================
+    # Uncomment the code below to train the best model and visualize its predictions
+    # on test samples. Useful for qualitative analysis of model performance.
+    # successful = [r for r in all_results if r["status"] == "success"]
+    # if successful:
+    #     best = max(successful, key=lambda x: x["test_accuracy"])
+    #     print("\nTraining best model for visualization...")
+    #     activation_func = next(f for f, n in config.ACTIVATION_FUNCTIONS if n == best["activation"])
+    #     best_model = Network(input_neurons, best["hidden_neurons"], output_neurons, activation_function=activation_func)
+    #     # Train and visualize...
+    #     Visualizer.show_multiple_predictions(best_model, X_test, Y_test, num_samples=10)
 
 
 if __name__ == "__main__":
+    # ========================================================================
+    # CHOOSE ONE OF THE FOLLOWING OPTIONS:
+    # ========================================================================
+    
+    # OPTION 1: Run the simple network example (single network training)
+    # Uncomment the line below to train a single network without grid search
+    # simple_network_example()
+    
+    # OPTION 2: Run full experimental pipeline (default)
+    # Grid search over architectures, learning rates, and activation functions
     main()

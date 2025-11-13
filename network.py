@@ -3,56 +3,56 @@ import activation as act
 
 
 class Network:
-    def __init__(self, input_n: int, hiddens_n: list, output_n: int, sigma: float = 0.001):
+    def __init__(self, input_neurons: int, hiddens_neurons: list, output_neurons: int, sigma: float = 0.001, activation_function=None):
         """Initialize the neural network with given parameters."""
-        if input_n is None or output_n is None:
+        if input_neurons is None or output_neurons is None:
             raise ValueError("Input and output neurons must be specified.")
-        if input_n <= 0 or output_n <= 0:
+        if input_neurons <= 0 or output_neurons <= 0:
             raise ValueError("Input and output neurons must be positive integers.")
-        if not isinstance(hiddens_n, list) or len(hiddens_n) == 0:
+        if not isinstance(hiddens_neurons, list) or len(hiddens_neurons) == 0:
             raise ValueError("Hidden neurons must be a non-empty list.")
-        if any(n <= 0 for n in hiddens_n):
-            raise ValueError("All hidden neurons must be positive integers.")
+        if any(n <= 0 for n in hiddens_neurons):
+            raise ValueError("All hidden layer sizes must be positive integers.")
 
-        self._input_neurons: int = input_n  # Number of input neurons
-        self._hidden_neurons: list = hiddens_n  # List of hidden layer neurons
-        self._output_neurons: int = output_n  # Number of output neurons
-        self._depth: int = 0  # Depth of the network (number of layers excluding input layer)
+        self._input_neurons: int = input_neurons
+        self._hidden_neurons: list = hiddens_neurons
+        self._output_neurons: int = output_neurons
+        self._depth: int = 0
+        self._sigma: float = sigma
+        self._biases: list = []
+        self._weights: list = []
+        self._act_functions: list = []
+        
+        # Store the activation function to use for hidden layers
+        self._activation_function = activation_function if activation_function is not None else act.sigmoid
 
-        self._sigma: float = sigma  # Standard deviation for weight initialization
-        self._biases: list = []  # List of biases for each layer
-        self._weights: list = []  # List of weights for each layer
-
-        self._act_functions: list = []  # List of activation functions for each layer
-
-        self._init_params()  # Initialize parameters: biases, weights, and activation functions
+        self._init_params()
 
     def _init_params(self) -> None:
         """Initialize biases, weights, and activation functions for the network."""
         prev_conn_num: int = self._input_neurons
         for curr_hidden in self._hidden_neurons:
-            # Biases array for each curr_hidden neurons (one bias for each neuron)
+            # Biases array for each hidden layer
             self._biases.append(self._sigma * np.random.normal(size=[curr_hidden, 1]))
-            # Weights matrix for each curr_hidden neurons
+            # Weights matrix for each hidden layer
             self._weights.append(self._sigma * np.random.normal(size=[curr_hidden, prev_conn_num]))
-            # Set activation function for each hidden layer
-            self._act_functions.append(act.tanh)
-
+            # Set the chosen activation function for hidden layers
+            self._act_functions.append(self._activation_function)
             prev_conn_num = curr_hidden
 
-        # Biases array for each output neurons (one bias for each neuron)
+        # Biases array for output neurons
         self._biases.append(self._sigma * np.random.normal(size=[self._output_neurons, 1]))
-        # Weights matrix for each output neurons
+        # Weights matrix for output neurons
         self._weights.append(self._sigma * np.random.normal(size=[self._output_neurons, prev_conn_num]))
-        # Set activation function for output layer
+        # Set activation function for output layer (identity for softmax in cross-entropy)
         self._act_functions.append(act.identity)
 
-        # Calculate the depth of the network (excluding input layer)
+        # Calculate the depth of the network
         self._depth = len(self._weights)
 
     def copy_network(self) -> "Network":
         """Create a copy of the current network instance."""
-        new_net = Network(self._input_neurons, self._hidden_neurons, self._output_neurons, self._sigma)
+        new_net = Network(self._input_neurons, self._hidden_neurons, self._output_neurons, self._sigma, self._activation_function)
         new_net._biases = [np.copy(b) for b in self._biases]
         new_net._weights = [np.copy(w) for w in self._weights]
         new_net._act_functions = list(self._act_functions)
@@ -60,13 +60,18 @@ class Network:
 
     def get_accuracy(self, Z, Y) -> float:
         """Calculate the accuracy of the network."""
-        # X are the network predictions, Y are the one-hot labels
+        # Z are the network predictions, Y are the one-hot labels
         # Both have shape (number_samples, number_classes)
         total_labels = Y.shape[0]
         predicted_labels = np.argmax(Z, axis=1)
         true_labels = np.argmax(Y, axis=1)
         correct = np.sum(predicted_labels == true_labels)
         return correct / total_labels
+
+    def predict_single(self, X_sample: np.ndarray) -> int:
+        """Predict the label for a single sample."""
+        Y_pred = self.forward_propagation(X_sample)
+        return int(np.argmax(Y_pred))
 
     def forward_propagation(self, X) -> np.ndarray:
         """Perform forward propagation through the network."""
@@ -125,7 +130,7 @@ class Network:
             bias_gradient = np.sum(delta_values[layer], axis=0, keepdims=True).T
             self._biases[layer] -= (eta / num_samples) * bias_gradient
 
-    def fit(self, X_train, Y_train, X_valid, Y_valid, error_function, epoch_number=10, eta=0.1, patience=5) -> None:
+    def fit(self, X_train, Y_train, X_valid, Y_valid, error_function, epoch_number=10, eta=0.1, patience=5) -> dict:
         # Perform forward propagation and calculate the error
         Z_train = self.forward_propagation(X_train)
         error_train = error_function(Z_train, Y_train)
@@ -133,6 +138,10 @@ class Network:
         # Perform forward propagation for validation set
         Z_valid = self.forward_propagation(X_valid)
         error_valid = error_function(Z_valid, Y_valid)
+        
+        # Store initial metrics
+        initial_valid_error = float(error_valid)
+        initial_valid_accuracy = float(self.get_accuracy(Z_valid, Y_valid))
 
         # Print initial training information
         self._print_train_info(Z_train, Y_train, Z_valid, Y_valid, error_train, error_valid, -1)
@@ -166,6 +175,20 @@ class Network:
                 if patience_counter >= patience:
                     print(f"Early stopping at epoch {curr_epoca} due to no improvement in validation error.")
                     break
+        
+        # Store final metrics
+        final_valid_error = float(error_valid)
+        final_valid_accuracy = float(self.get_accuracy(Z_valid, Y_valid))
+        
+        # Return training history
+        return {
+            "epochs_trained": curr_epoca,
+            "initial_valid_error": initial_valid_error,
+            "initial_valid_accuracy": initial_valid_accuracy,
+            "final_valid_error": final_valid_error,
+            "final_valid_accuracy": final_valid_accuracy,
+            "best_valid_error": float(best_valid_error)
+        }
 
     def get_info(self) -> None:
         """Print the architecture and parameters of the network."""

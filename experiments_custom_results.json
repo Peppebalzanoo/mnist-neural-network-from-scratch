@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-11-13 21:02:19",
+  "total_experiments": 1,
+  "experiments": [
+    {
+      "hidden_neurons": [
+        100,
+        50
+      ],
+      "eta": 1.0,
+      "activation": "relu",
+      "epoch_number": 500,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.1135,
+      "epochs_trained": 27,
+      "initial_valid_error": 2.3025857514977495,
+      "initial_valid_accuracy": 0.10033333333333333,
+      "final_valid_error": 2.301527886810136,
+      "final_valid_accuracy": 0.11016666666666666,
+      "best_valid_error": 2.301514281936459,
+      "status": "success"
+    }
+  ]
+}

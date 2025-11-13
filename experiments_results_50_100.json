@@ -1,0 +1,330 @@
+{
+  "timestamp": "2025-11-13 20:48:14",
+  "total_experiments": 18,
+  "experiments": [
+    {
+      "hidden_neurons": [
+        50
+      ],
+      "eta": 0.1,
+      "activation": "sigmoid",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.1135,
+      "epochs_trained": 19,
+      "initial_valid_error": 2.302585678621566,
+      "initial_valid_accuracy": 0.10216666666666667,
+      "final_valid_error": 2.3018629607708987,
+      "final_valid_accuracy": 0.10808333333333334,
+      "best_valid_error": 2.301804234430227,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        50
+      ],
+      "eta": 0.1,
+      "activation": "tanh",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.9202,
+      "epochs_trained": 1000,
+      "initial_valid_error": 2.3025914620445573,
+      "initial_valid_accuracy": 0.09791666666666667,
+      "final_valid_error": 0.2976239267446146,
+      "final_valid_accuracy": 0.9158333333333334,
+      "best_valid_error": 0.2976239267446146,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        50
+      ],
+      "eta": 0.1,
+      "activation": "relu",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.9152,
+      "epochs_trained": 1000,
+      "initial_valid_error": 2.302559539425825,
+      "initial_valid_accuracy": 0.094,
+      "final_valid_error": 0.30866959418967155,
+      "final_valid_accuracy": 0.91025,
+      "best_valid_error": 0.30866959418967155,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        50
+      ],
+      "eta": 0.5,
+      "activation": "sigmoid",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.9275,
+      "epochs_trained": 1000,
+      "initial_valid_error": 2.3025576184822274,
+      "initial_valid_accuracy": 0.10941666666666666,
+      "final_valid_error": 0.2592494136158534,
+      "final_valid_accuracy": 0.9238333333333333,
+      "best_valid_error": 0.2592494136158534,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        50
+      ],
+      "eta": 0.5,
+      "activation": "tanh",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.96,
+      "epochs_trained": 1000,
+      "initial_valid_error": 2.3025954927349366,
+      "initial_valid_accuracy": 0.1035,
+      "final_valid_error": 0.15069743322190668,
+      "final_valid_accuracy": 0.9549166666666666,
+      "best_valid_error": 0.15069743322190668,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        50
+      ],
+      "eta": 0.5,
+      "activation": "relu",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.9634,
+      "epochs_trained": 1000,
+      "initial_valid_error": 2.3025966012894354,
+      "initial_valid_accuracy": 0.10358333333333333,
+      "final_valid_error": 0.15805758432873307,
+      "final_valid_accuracy": 0.9561666666666667,
+      "best_valid_error": 0.15805758432873307,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        50
+      ],
+      "eta": 1.0,
+      "activation": "sigmoid",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.945,
+      "epochs_trained": 1000,
+      "initial_valid_error": 2.3025935658375354,
+      "initial_valid_accuracy": 0.10283333333333333,
+      "final_valid_error": 0.21074836510717068,
+      "final_valid_accuracy": 0.9406666666666667,
+      "best_valid_error": 0.21074836510717068,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        50
+      ],
+      "eta": 1.0,
+      "activation": "tanh",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.9213,
+      "epochs_trained": 145,
+      "initial_valid_error": 2.302600885611063,
+      "initial_valid_accuracy": 0.10275,
+      "final_valid_error": 0.27329081445970915,
+      "final_valid_accuracy": 0.9181666666666667,
+      "best_valid_error": 0.26608046793613327,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        50
+      ],
+      "eta": 1.0,
+      "activation": "relu",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.3975,
+      "epochs_trained": 27,
+      "initial_valid_error": 2.302573043570024,
+      "initial_valid_accuracy": 0.09733333333333333,
+      "final_valid_error": 2.061996488698799,
+      "final_valid_accuracy": 0.40208333333333335,
+      "best_valid_error": 1.438261423967206,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        100
+      ],
+      "eta": 0.1,
+      "activation": "sigmoid",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.1135,
+      "epochs_trained": 14,
+      "initial_valid_error": 2.3025366376104923,
+      "initial_valid_accuracy": 0.10216666666666667,
+      "final_valid_error": 2.301822868580343,
+      "final_valid_accuracy": 0.10925,
+      "best_valid_error": 2.3017458861517914,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        100
+      ],
+      "eta": 0.1,
+      "activation": "tanh",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.9197,
+      "epochs_trained": 1000,
+      "initial_valid_error": 2.3025842352583554,
+      "initial_valid_accuracy": 0.11508333333333333,
+      "final_valid_error": 0.2950595298026276,
+      "final_valid_accuracy": 0.9140833333333334,
+      "best_valid_error": 0.2950595298026276,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        100
+      ],
+      "eta": 0.1,
+      "activation": "relu",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.9164,
+      "epochs_trained": 1000,
+      "initial_valid_error": 2.3025629354593242,
+      "initial_valid_accuracy": 0.08666666666666667,
+      "final_valid_error": 0.31609126097228485,
+      "final_valid_accuracy": 0.91175,
+      "best_valid_error": 0.31609126097228485,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        100
+      ],
+      "eta": 0.5,
+      "activation": "sigmoid",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.9261,
+      "epochs_trained": 1000,
+      "initial_valid_error": 2.302611175058408,
+      "initial_valid_accuracy": 0.1085,
+      "final_valid_error": 0.2709047506806193,
+      "final_valid_accuracy": 0.9229166666666667,
+      "best_valid_error": 0.2709047506806193,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        100
+      ],
+      "eta": 0.5,
+      "activation": "tanh",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.9609,
+      "epochs_trained": 1000,
+      "initial_valid_error": 2.3026420133992462,
+      "initial_valid_accuracy": 0.09966666666666667,
+      "final_valid_error": 0.14742968661397457,
+      "final_valid_accuracy": 0.9585833333333333,
+      "best_valid_error": 0.14742968661397457,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        100
+      ],
+      "eta": 0.5,
+      "activation": "relu",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.9651,
+      "epochs_trained": 1000,
+      "initial_valid_error": 2.3025821698762763,
+      "initial_valid_accuracy": 0.072,
+      "final_valid_error": 0.12442087692765123,
+      "final_valid_accuracy": 0.9638333333333333,
+      "best_valid_error": 0.12442087692765123,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        100
+      ],
+      "eta": 1.0,
+      "activation": "sigmoid",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.1135,
+      "epochs_trained": 11,
+      "initial_valid_error": 2.3025514423493743,
+      "initial_valid_accuracy": 0.09641666666666666,
+      "final_valid_error": 2.3468924778593645,
+      "final_valid_accuracy": 0.11216666666666666,
+      "best_valid_error": 2.3051879100641237,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        100
+      ],
+      "eta": 1.0,
+      "activation": "tanh",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.3389,
+      "epochs_trained": 26,
+      "initial_valid_error": 2.3026287776602614,
+      "initial_valid_accuracy": 0.08958333333333333,
+      "final_valid_error": 2.9348735607156504,
+      "final_valid_accuracy": 0.3373333333333333,
+      "best_valid_error": 1.1465190453939262,
+      "status": "success"
+    },
+    {
+      "hidden_neurons": [
+        100
+      ],
+      "eta": 1.0,
+      "activation": "relu",
+      "epoch_number": 1000,
+      "patience": 10,
+      "method": "holdout",
+      "test_accuracy": 0.3971,
+      "epochs_trained": 26,
+      "initial_valid_error": 2.302559304738579,
+      "initial_valid_accuracy": 0.1005,
+      "final_valid_error": 1.6201740163293583,
+      "final_valid_accuracy": 0.3953333333333333,
+      "best_valid_error": 1.3944487975741995,
+      "status": "success"
+    }
+  ]
+}
